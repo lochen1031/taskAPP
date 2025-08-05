@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试无效URL处理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-link {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+        }
+        .test-link:hover {
+            background: #e0e0e0;
+        }
+        .description {
+            color: #666;
+            font-size: 14px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <h1>聊天功能无效URL处理测试</h1>
+    
+    <div class="section success">
+        <h2>✅ 问题已修复</h2>
+        <p>前端代码已更新，现在会正确处理以下情况：</p>
+        <ul>
+            <li>无效的任务ID或用户ID格式（非24位字符）</li>
+            <li>不存在的任务或用户</li>
+            <li>API返回500错误时自动跳转到聊天首页</li>
+            <li>避免显示误导性的"获取消息失败"错误</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>测试链接</h2>
+        <p>点击以下链接测试无效URL的处理（需要先登录）：</p>
+        
+        <a href="http://localhost:3000/chat?task=invalid_task_id&user=invalid_user_id" class="test-link" target="_blank">
+            测试1: 无效的任务ID和用户ID
+            <div class="description">应该自动跳转到聊天首页，不显示错误消息</div>
+        </a>
+        
+        <a href="http://localhost:3000/chat?task=123&user=456" class="test-link" target="_blank">
+            测试2: 格式错误的ID（太短）
+            <div class="description">应该自动跳转到聊天首页，不显示错误消息</div>
+        </a>
+        
+        <a href="http://localhost:3000/chat?task=507f1f77bcf86cd799439011&user=507f1f77bcf86cd799439012" class="test-link" target="_blank">
+            测试3: 格式正确但不存在的ID
+            <div class="description">应该显示"任务不存在"或"用户不存在"并跳转到聊天首页</div>
+        </a>
+        
+        <a href="http://localhost:3000/chat" class="test-link" target="_blank">
+            测试4: 正常的聊天页面
+            <div class="description">应该正常显示聊天界面</div>
+        </a>
+    </div>
+    
+    <div class="section warning">
+        <h2>⚠️ 测试说明</h2>
+        <ul>
+            <li>请确保已经登录系统</li>
+            <li>如果看到"获取消息失败"错误，说明修复未生效</li>
+            <li>正常情况下，无效URL应该自动跳转到聊天首页</li>
+            <li>检查浏览器控制台是否有错误信息</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>修复详情</h2>
+        <p><strong>修改的文件：</strong> <code>client/src/pages/Chat/Chat.js</code></p>
+        <p><strong>主要改进：</strong></p>
+        <ul>
+            <li><code>initializeChatFromParams</code> 函数增加了参数格式验证</li>
+            <li>无效参数时自动导航到聊天首页</li>
+            <li><code>fetchMessages</code> 函数不再在500错误时显示错误消息</li>
+            <li>改善了用户体验，避免误导性错误提示</li>
+        </ul>
+    </div>
+    
+    <script>
+        // 添加一些JavaScript来帮助测试
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('无效URL测试页面已加载');
+            console.log('请点击上面的测试链接来验证修复效果');
+        });
+    </script>
+</body>
+</html>

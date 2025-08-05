@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天显示测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+        .chat-room-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #fafafa;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1890ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .username {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        .task-title {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .last-message {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+        .header-info {
+            margin-left: 12px;
+        }
+        .header-username {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .header-task {
+            font-size: 12px;
+            color: #666;
+        }
+        .issue {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+        .correct {
+            color: #52c41a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>聊天显示测试页面</h1>
+        
+        <div class="test-section">
+            <div class="test-title">✅ 正确的聊天室列表显示</div>
+            <p>左侧聊天列表应该显示：<span class="correct">用户名作为标题，任务名作为描述</span></p>
+            
+            <div class="chat-room-item">
+                <div class="avatar">T0</div>
+                <div class="chat-info">
+                    <div class="username">testuser0</div>
+                    <div class="task-title">关于任务: 1000</div>
+                    <div class="last-message">JI</div>
+                </div>
+            </div>
+            
+            <div class="chat-room-item">
+                <div class="avatar">C</div>
+                <div class="chat-info">
+                    <div class="username">chenlo</div>
+                    <div class="task-title">关于任务: 1000</div>
+                    <div class="last-message">测试申请者聊天按钮消息发送</div>
+                </div>
+            </div>
+            
+            <div class="chat-room-item">
+                <div class="avatar">T2</div>
+                <div class="chat-info">
+                    <div class="username">testuser2</div>
+                    <div class="task-title">关于任务: 测试任务 - 2025/7/26 下午8:16:12</div>
+                    <div class="last-message">测试消息发送修复 - 上午2:03:52</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">✅ 正确的聊天界面头部显示</div>
+            <p>聊天界面顶部应该显示：<span class="correct">用户名作为主标题，任务名作为副标题</span></p>
+            
+            <div class="chat-header">
+                <div class="avatar">T0</div>
+                <div class="header-info">
+                    <div class="header-username">testuser0</div>
+                    <div class="header-task">关于: 1000</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">❌ 可能的错误显示情况</div>
+            <p>如果用户看到的是：<span class="issue">任务名作为标题，而不是用户名</span></p>
+            
+            <div class="chat-room-item">
+                <div class="avatar">1K</div>
+                <div class="chat-info">
+                    <div class="username issue">1000</div>
+                    <div class="task-title">关于任务: testuser0</div>
+                    <div class="last-message">JI</div>
+                </div>
+            </div>
+            
+            <div class="chat-header">
+                <div class="avatar">1K</div>
+                <div class="header-info">
+                    <div class="header-username issue">1000</div>
+                    <div class="header-task">关于: testuser0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔍 检查步骤</div>
+            <ol>
+                <li>打开聊天页面: <a href="http://localhost:3000/chat" target="_blank">http://localhost:3000/chat</a></li>
+                <li>查看左侧聊天列表中每个聊天室的显示</li>
+                <li>点击进入聊天室，查看顶部显示的信息</li>
+                <li>确认用户名和任务名的显示位置是否正确</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">📊 当前数据库中的实际数据</div>
+            <p>根据调试结果，数据库中的聊天室数据结构正确：</p>
+            <ul>
+                <li><strong>聊天室1:</strong> 用户 testuser0，任务 "1000"</li>
+                <li><strong>聊天室2:</strong> 用户 chenlo，任务 "1000"</li>
+                <li><strong>聊天室3:</strong> 用户 testuser2，任务 "测试任务 - 2025/7/26 下午8:16:12"</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络错误诊断工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .error-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .error-title {
+            color: #856404;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .fix-button {
+            background: #e74c3c;
+        }
+        .fix-button:hover {
+            background: #c0392b;
+        }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+        }
+        .step-number {
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 网络错误诊断工具</h1>
+        
+        <div class="error-info">
+            <div class="error-title">⚠️ 检测到网络错误：ERR_NAME_NOT_RESOLVED</div>
+            <p>这个错误通常表示域名解析失败，可能的原因包括：</p>
+            <ul>
+                <li>DNS服务器问题</li>
+                <li>网络连接问题</li>
+                <li>防火墙或代理设置</li>
+                <li>外部网站访问受限</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>🔍 自动诊断</h3>
+            <button onclick="startDiagnosis()">开始诊断</button>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="diagnosisResults"></div>
+        </div>
+
+        <div class="section">
+            <h3>🛠️ 快速修复</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>清除浏览器缓存</strong>
+                <button onclick="clearBrowserCache()">清除缓存</button>
+                <p>清除浏览器的DNS缓存和网页缓存</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>刷新DNS缓存</strong>
+                <button onclick="showDNSCommands()">显示命令</button>
+                <div id="dnsCommands" style="display: none;">
+                    <p>在命令提示符（管理员权限）中运行：</p>
+                    <div class="code">ipconfig /flushdns</div>
+                    <div class="code">ipconfig /release</div>
+                    <div class="code">ipconfig /renew</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>检查网络连接</strong>
+                <button onclick="testNetworkConnectivity()">测试连接</button>
+                <div id="networkResults"></div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>重启应用</strong>
+                <button onclick="restartApplication()" class="fix-button">重启应用</button>
+                <p>硬刷新页面并重新加载所有资源</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📋 详细解决方案</h3>
+            <div class="step">
+                <span class="step-number">A</span>
+                <strong>检查本地服务器</strong>
+                <p>确保后端服务器正在运行：</p>
+                <div class="code">http://localhost:5000</div>
+                <button onclick="testLocalServer()">测试本地服务器</button>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">B</span>
+                <strong>检查前端应用</strong>
+                <p>确保前端应用正在运行：</p>
+                <div class="code">http://localhost:3000</div>
+                <button onclick="testFrontendApp()">测试前端应用</button>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">C</span>
+                <strong>禁用外部链接</strong>
+                <p>已自动移除可能导致问题的外部链接</p>
+                <div class="test-result success">✅ 外部GitHub链接已禁用</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🎯 聊天功能测试</h3>
+            <button onclick="testChatFunction()">测试聊天功能</button>
+            <div id="chatTestResults"></div>
+        </div>
+    </div>
+
+    <script>
+        let diagnosisStep = 0;
+        const totalSteps = 6;
+
+        function updateProgress(step) {
+            const progress = (step / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('diagnosisResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        async function startDiagnosis() {
+            document.getElementById('diagnosisResults').innerHTML = '';
+            diagnosisStep = 0;
+            
+            addResult('🔍 开始网络诊断...', 'info');
+            updateProgress(++diagnosisStep);
+            
+            // 1. 检查本地存储
+            setTimeout(() => {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    addResult('✅ 用户认证令牌存在', 'success');
+                } else {
+                    addResult('❌ 用户认证令牌缺失', 'error');
+                }
+                updateProgress(++diagnosisStep);
+            }, 500);
+            
+            // 2. 检查当前页面
+            setTimeout(() => {
+                addResult(`📍 当前页面: ${window.location.href}`, 'info');
+                updateProgress(++diagnosisStep);
+            }, 1000);
+            
+            // 3. 检查控制台错误
+            setTimeout(() => {
+                const errors = [];
+                const originalError = console.error;
+                console.error = function(...args) {
+                    errors.push(args.join(' '));
+                    originalError.apply(console, args);
+                };
+                
+                if (errors.length > 0) {
+                    addResult(`⚠️ 发现 ${errors.length} 个控制台错误`, 'warning');
+                } else {
+                    addResult('✅ 无控制台错误', 'success');
+                }
+                updateProgress(++diagnosisStep);
+            }, 1500);
+            
+            // 4. 测试本地API
+            setTimeout(async () => {
+                try {
+                    const response = await fetch('http://localhost:5000/api/auth/me', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        addResult('✅ 本地API连接正常', 'success');
+                    } else {
+                        addResult(`❌ 本地API响应错误: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ 本地API连接失败: ${error.message}`, 'error');
+                }
+                updateProgress(++diagnosisStep);
+            }, 2000);
+            
+            // 5. 检查网络连接
+            setTimeout(async () => {
+                try {
+                    const response = await fetch('http://localhost:3000', { method: 'HEAD' });
+                    if (response.ok) {
+                        addResult('✅ 前端应用连接正常', 'success');
+                    } else {
+                        addResult('❌ 前端应用连接异常', 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ 前端应用连接失败: ${error.message}`, 'error');
+                }
+                updateProgress(++diagnosisStep);
+            }, 2500);
+            
+            // 6. 完成诊断
+            setTimeout(() => {
+                addResult('🎉 诊断完成！请查看上述结果并按照建议进行修复。', 'info');
+                updateProgress(totalSteps);
+            }, 3000);
+        }
+
+        function clearBrowserCache() {
+            // 清除localStorage
+            const itemsToKeep = ['token', 'user'];
+            const keysToRemove = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!itemsToKeep.includes(key)) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // 清除sessionStorage
+            sessionStorage.clear();
+            
+            alert('✅ 浏览器缓存已清除！请刷新页面。');
+        }
+
+        function showDNSCommands() {
+            const commandsDiv = document.getElementById('dnsCommands');
+            commandsDiv.style.display = commandsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function testNetworkConnectivity() {
+            const resultsDiv = document.getElementById('networkResults');
+            resultsDiv.innerHTML = '<div class="test-result info">🔍 测试网络连接...</div>';
+            
+            const tests = [
+                { name: '本地后端', url: 'http://localhost:5000' },
+                { name: '本地前端', url: 'http://localhost:3000' }
+            ];
+            
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url, { 
+                        method: 'HEAD',
+                        mode: 'no-cors'
+                    });
+                    resultsDiv.innerHTML += `<div class="test-result success">✅ ${test.name} 连接正常</div>`;
+                } catch (error) {
+                    resultsDiv.innerHTML += `<div class="test-result error">❌ ${test.name} 连接失败: ${error.message}</div>`;
+                }
+            }
+        }
+
+        function restartApplication() {
+            if (confirm('确定要重启应用吗？这将刷新页面并清除临时数据。')) {
+                // 硬刷新页面
+                window.location.reload(true);
+            }
+        }
+
+        async function testLocalServer() {
+            try {
+                const response = await fetch('http://localhost:5000', { method: 'HEAD' });
+                if (response.ok) {
+                    alert('✅ 本地服务器运行正常');
+                } else {
+                    alert('❌ 本地服务器响应异常');
+                }
+            } catch (error) {
+                alert(`❌ 本地服务器连接失败: ${error.message}`);
+            }
+        }
+
+        async function testFrontendApp() {
+            try {
+                const response = await fetch('http://localhost:3000', { method: 'HEAD' });
+                if (response.ok) {
+                    alert('✅ 前端应用运行正常');
+                } else {
+                    alert('❌ 前端应用响应异常');
+                }
+            } catch (error) {
+                alert(`❌ 前端应用连接失败: ${error.message}`);
+            }
+        }
+
+        async function testChatFunction() {
+            const resultsDiv = document.getElementById('chatTestResults');
+            resultsDiv.innerHTML = '<div class="test-result info">🔍 测试聊天功能...</div>';
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultsDiv.innerHTML += '<div class="test-result error">❌ 未找到认证令牌，请先登录</div>';
+                return;
+            }
+            
+            try {
+                // 测试聊天室API
+                const roomsResponse = await fetch('http://localhost:5000/api/chat/rooms', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (roomsResponse.ok) {
+                    const roomsData = await roomsResponse.json();
+                    resultsDiv.innerHTML += `<div class="test-result success">✅ 聊天室API正常，找到 ${roomsData.data?.length || 0} 个聊天室</div>`;
+                    
+                    // 如果有聊天室，测试聊天功能
+                    if (roomsData.data && roomsData.data.length > 0) {
+                        const firstRoom = roomsData.data[0];
+                        if (firstRoom.task && firstRoom.otherUser) {
+                            const chatUrl = `http://localhost:3000/chat?task=${firstRoom.task._id}&user=${firstRoom.otherUser._id}`;
+                            resultsDiv.innerHTML += `<div class="test-result info">🔗 测试聊天链接: <a href="${chatUrl}" target="_blank">${chatUrl}</a></div>`;
+                        }
+                    }
+                } else {
+                    resultsDiv.innerHTML += `<div class="test-result error">❌ 聊天室API错误: ${roomsResponse.status}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="test-result error">❌ 聊天功能测试失败: ${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时自动检查基本状态
+        window.onload = function() {
+            console.log('🔧 网络错误诊断工具已加载');
+            console.log('当前页面:', window.location.href);
+            console.log('用户令牌:', localStorage.getItem('token') ? '存在' : '缺失');
+        };
+    </script>
+</body>
+</html>

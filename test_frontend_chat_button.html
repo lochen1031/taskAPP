@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试申请者聊天按钮</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .chat-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #1890ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .chat-button:hover {
+            background-color: #40a9ff;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f6f6f6;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+        }
+    </style>
+</head>
+<body>
+    <h1>申请者聊天按钮测试</h1>
+    
+    <div class="test-section">
+        <h3>1. 测试聊天按钮URL生成</h3>
+        <p>模拟TaskDetail.js中申请者聊天按钮的URL生成：</p>
+        
+        <div id="url-test">
+            <!-- 这里会动态生成测试内容 -->
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. 测试URL参数解析</h3>
+        <p>测试Chat.js中URL参数的解析逻辑：</p>
+        
+        <div id="param-test">
+            <!-- 这里会动态生成测试内容 -->
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. 测试ID长度验证</h3>
+        <p>测试Chat.js中的24位ID长度验证：</p>
+        
+        <div id="id-validation-test">
+            <!-- 这里会动态生成测试内容 -->
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. 实际聊天按钮测试</h3>
+        <p>点击下面的按钮测试实际的聊天功能：</p>
+        
+        <!-- 使用测试脚本中获取的真实ID -->
+        <a href="http://localhost:3000/chat?task=6884ea7763dd54c79507b817&user=6884c997d4be2fb650f04cf8" 
+           class="chat-button" target="_blank">
+            与申请者 chenlo 聊天
+        </a>
+        
+        <a href="http://localhost:3000/chat?task=6884ea7763dd54c79507b817&user=6884e3fb614d2aaa36f1a263" 
+           class="chat-button" target="_blank">
+            与申请者 testuser_image 聊天
+        </a>
+        
+        <div class="result">
+            <strong>测试说明：</strong>
+            <ul>
+                <li>点击上面的按钮应该能正常打开聊天页面</li>
+                <li>如果出现错误，请检查浏览器控制台</li>
+                <li>确保已登录到应用程序</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 1. 测试URL生成
+        function testUrlGeneration() {
+            const testCases = [
+                {
+                    taskId: '6884ea7763dd54c79507b817',
+                    userId: '6884c997d4be2fb650f04cf8',
+                    username: 'chenlo'
+                },
+                {
+                    taskId: '6884ea7763dd54c79507b817',
+                    userId: '6884e3fb614d2aaa36f1a263',
+                    username: 'testuser_image'
+                }
+            ];
+            
+            let html = '';
+            testCases.forEach((testCase, index) => {
+                const url = `/chat?task=${testCase.taskId}&user=${testCase.userId}`;
+                html += `
+                    <div class="result success">
+                        <strong>测试案例 ${index + 1}:</strong><br>
+                        用户: ${testCase.username}<br>
+                        生成的URL: <code>${url}</code><br>
+                        <a href="http://localhost:3000${url}" class="chat-button" target="_blank">测试链接</a>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('url-test').innerHTML = html;
+        }
+        
+        // 2. 测试URL参数解析
+        function testUrlParsing() {
+            const testUrls = [
+                '/chat?task=6884ea7763dd54c79507b817&user=6884c997d4be2fb650f04cf8',
+                '/chat?task=invalid&user=6884c997d4be2fb650f04cf8',
+                '/chat?task=6884ea7763dd54c79507b817&user=invalid',
+                '/chat?task=&user=',
+                '/chat'
+            ];
+            
+            let html = '';
+            testUrls.forEach((url, index) => {
+                const urlParams = new URLSearchParams(url.split('?')[1] || '');
+                const taskId = urlParams.get('task');
+                const userId = urlParams.get('user');
+                
+                const isValid = taskId && userId && taskId.length === 24 && userId.length === 24;
+                const resultClass = isValid ? 'success' : 'error';
+                
+                html += `
+                    <div class="result ${resultClass}">
+                        <strong>测试URL ${index + 1}:</strong> <code>${url}</code><br>
+                        taskId: ${taskId || '(空)'} (长度: ${taskId ? taskId.length : 0})<br>
+                        userId: ${userId || '(空)'} (长度: ${userId ? userId.length : 0})<br>
+                        验证结果: ${isValid ? '✅ 通过' : '❌ 失败'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('param-test').innerHTML = html;
+        }
+        
+        // 3. 测试ID长度验证
+        function testIdValidation() {
+            const testIds = [
+                { id: '6884ea7763dd54c79507b817', name: '正常的MongoDB ObjectId' },
+                { id: '6884c997d4be2fb650f04cf8', name: '另一个正常的MongoDB ObjectId' },
+                { id: '123', name: '太短的ID' },
+                { id: '6884ea7763dd54c79507b817abc', name: '太长的ID' },
+                { id: '', name: '空ID' },
+                { id: 'invalid_id_format_test', name: '无效格式的ID' }
+            ];
+            
+            let html = '';
+            testIds.forEach((testCase, index) => {
+                const isValid = testCase.id && testCase.id.length === 24;
+                const resultClass = isValid ? 'success' : 'error';
+                
+                html += `
+                    <div class="result ${resultClass}">
+                        <strong>${testCase.name}:</strong><br>
+                        ID: <code>${testCase.id}</code><br>
+                        长度: ${testCase.id.length}<br>
+                        验证结果: ${isValid ? '✅ 通过' : '❌ 失败'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('id-validation-test').innerHTML = html;
+        }
+        
+        // 运行所有测试
+        document.addEventListener('DOMContentLoaded', function() {
+            testUrlGeneration();
+            testUrlParsing();
+            testIdValidation();
+        });
+        
+        // 添加点击事件监听
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('chat-button')) {
+                console.log('点击聊天按钮:', e.target.href);
+            }
+        });
+    </script>
+</body>
+</html>

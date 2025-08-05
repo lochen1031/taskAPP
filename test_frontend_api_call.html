@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端API调用测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+        .button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background: #40a9ff;
+        }
+        .result {
+            background: #f6f6f6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #ff4d4f;
+        }
+        .success {
+            color: #52c41a;
+        }
+        .warning {
+            color: #faad14;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        .input-group input {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>前端API调用测试</h1>
+        
+        <div class="section">
+            <div class="title">🔐 用户登录</div>
+            <div class="input-group">
+                <label>邮箱:</label>
+                <input type="email" id="email" value="demo@example.com">
+            </div>
+            <div class="input-group">
+                <label>密码:</label>
+                <input type="password" id="password" value="123456">
+            </div>
+            <button class="button" onclick="login()">登录</button>
+            <button class="button" onclick="clearResults()">清除结果</button>
+            <div id="loginResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <div class="title">💬 聊天室API测试</div>
+            <button class="button" onclick="getChatRooms()">获取聊天室列表</button>
+            <button class="button" onclick="testLocalStorage()">检查本地存储</button>
+            <button class="button" onclick="clearCache()">清除缓存</button>
+            <div id="chatRoomsResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <div class="title">🔍 数据结构分析</div>
+            <button class="button" onclick="analyzeData()">分析聊天室数据</button>
+            <div id="analysisResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <div class="title">🌐 网络请求监控</div>
+            <p>请打开浏览器开发者工具的Network标签页，然后点击上面的按钮来监控API请求。</p>
+            <p>检查以下内容：</p>
+            <ul>
+                <li>请求URL是否正确</li>
+                <li>响应状态码</li>
+                <li>响应数据结构</li>
+                <li>是否有缓存相关的头部信息</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+        let currentUser = null;
+        let chatRoomsData = null;
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('loginResult').innerHTML = '';
+            document.getElementById('chatRoomsResult').innerHTML = '';
+            document.getElementById('analysisResult').innerHTML = '';
+        }
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log('loginResult', `尝试登录: ${email}`);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    currentToken = data.token;
+                    currentUser = data.user;
+                    log('loginResult', `登录成功: ${currentUser.username} (${currentUser._id})`, 'success');
+                    log('loginResult', `Token: ${currentToken.substring(0, 20)}...`);
+                } else {
+                    log('loginResult', `登录失败: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('loginResult', `登录错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getChatRooms() {
+            if (!currentToken) {
+                log('chatRoomsResult', '请先登录', 'error');
+                return;
+            }
+            
+            log('chatRoomsResult', '获取聊天室列表...');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/chat/rooms', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    chatRoomsData = data.data;
+                    log('chatRoomsResult', `获取到 ${chatRoomsData.length} 个聊天室`, 'success');
+                    
+                    chatRoomsData.forEach((room, index) => {
+                        log('chatRoomsResult', `\n聊天室 ${index + 1}:`);
+                        log('chatRoomsResult', `  _id: ${room._id}`);
+                        log('chatRoomsResult', `  lastMessage: ${room.lastMessage}`);
+                        
+                        if (room.task) {
+                            log('chatRoomsResult', `  task._id: ${room.task._id}`);
+                            log('chatRoomsResult', `  task.title: "${room.task.title}"`);
+                            log('chatRoomsResult', `  task.status: ${room.task.status}`);
+                        }
+                        
+                        if (room.otherUser) {
+                            log('chatRoomsResult', `  otherUser._id: ${room.otherUser._id}`);
+                            log('chatRoomsResult', `  otherUser.username: "${room.otherUser.username}"`);
+                            log('chatRoomsResult', `  otherUser.avatar: ${room.otherUser.avatar}`);
+                        }
+                        
+                        log('chatRoomsResult', `  unreadCount: ${room.unreadCount}`);
+                        
+                        // 检查数据一致性
+                        if (room.task && room.otherUser) {
+                            if (room.otherUser.username === room.task.title) {
+                                log('chatRoomsResult', `  ❌ 数据异常: otherUser.username 等于 task.title`, 'error');
+                            } else {
+                                log('chatRoomsResult', `  ✅ 数据正常: otherUser.username 不等于 task.title`, 'success');
+                            }
+                        }
+                    });
+                } else {
+                    log('chatRoomsResult', `获取聊天室失败: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('chatRoomsResult', `请求错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testLocalStorage() {
+            log('chatRoomsResult', '\n=== 检查本地存储 ===');
+            
+            // 检查localStorage
+            const keys = Object.keys(localStorage);
+            log('chatRoomsResult', `localStorage 键值对数量: ${keys.length}`);
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (key.includes('chat') || key.includes('room') || key.includes('message')) {
+                    log('chatRoomsResult', `  ${key}: ${value.substring(0, 100)}${value.length > 100 ? '...' : ''}`);
+                }
+            });
+            
+            // 检查sessionStorage
+            const sessionKeys = Object.keys(sessionStorage);
+            log('chatRoomsResult', `sessionStorage 键值对数量: ${sessionKeys.length}`);
+            sessionKeys.forEach(key => {
+                const value = sessionStorage.getItem(key);
+                if (key.includes('chat') || key.includes('room') || key.includes('message')) {
+                    log('chatRoomsResult', `  ${key}: ${value.substring(0, 100)}${value.length > 100 ? '...' : ''}`);
+                }
+            });
+        }
+        
+        function clearCache() {
+            // 清除相关的localStorage和sessionStorage
+            const keysToRemove = [];
+            
+            Object.keys(localStorage).forEach(key => {
+                if (key.includes('chat') || key.includes('room') || key.includes('message')) {
+                    keysToRemove.push(key);
+                }
+            });
+            
+            Object.keys(sessionStorage).forEach(key => {
+                if (key.includes('chat') || key.includes('room') || key.includes('message')) {
+                    keysToRemove.push(key);
+                }
+            });
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                sessionStorage.removeItem(key);
+            });
+            
+            log('chatRoomsResult', `清除了 ${keysToRemove.length} 个缓存项`, 'success');
+            log('chatRoomsResult', '建议刷新页面以确保缓存完全清除', 'warning');
+        }
+        
+        function analyzeData() {
+            if (!chatRoomsData) {
+                log('analysisResult', '请先获取聊天室数据', 'error');
+                return;
+            }
+            
+            log('analysisResult', '=== 数据结构分析 ===');
+            log('analysisResult', `聊天室数量: ${chatRoomsData.length}`);
+            
+            chatRoomsData.forEach((room, index) => {
+                log('analysisResult', `\n聊天室 ${index + 1} 详细分析:`);
+                
+                // 分析数据类型
+                log('analysisResult', `  typeof room: ${typeof room}`);
+                log('analysisResult', `  typeof room.task: ${typeof room.task}`);
+                log('analysisResult', `  typeof room.otherUser: ${typeof room.otherUser}`);
+                
+                if (room.task) {
+                    log('analysisResult', `  typeof room.task.title: ${typeof room.task.title}`);
+                    log('analysisResult', `  room.task.title 长度: ${room.task.title ? room.task.title.length : 'null'}`);
+                }
+                
+                if (room.otherUser) {
+                    log('analysisResult', `  typeof room.otherUser.username: ${typeof room.otherUser.username}`);
+                    log('analysisResult', `  room.otherUser.username 长度: ${room.otherUser.username ? room.otherUser.username.length : 'null'}`);
+                }
+                
+                // 检查是否有隐藏字符或特殊字符
+                if (room.task && room.task.title) {
+                    const taskTitle = room.task.title;
+                    log('analysisResult', `  task.title 字符码: [${Array.from(taskTitle).map(c => c.charCodeAt(0)).join(', ')}]`);
+                }
+                
+                if (room.otherUser && room.otherUser.username) {
+                    const username = room.otherUser.username;
+                    log('analysisResult', `  otherUser.username 字符码: [${Array.from(username).map(c => c.charCodeAt(0)).join(', ')}]`);
+                }
+                
+                // 检查对象属性
+                log('analysisResult', `  room 的所有属性: [${Object.keys(room).join(', ')}]`);
+                if (room.task) {
+                    log('analysisResult', `  room.task 的所有属性: [${Object.keys(room.task).join(', ')}]`);
+                }
+                if (room.otherUser) {
+                    log('analysisResult', `  room.otherUser 的所有属性: [${Object.keys(room.otherUser).join(', ')}]`);
+                }
+            });
+            
+            // 模拟前端渲染逻辑
+            log('analysisResult', '\n=== 模拟前端渲染 ===');
+            chatRoomsData.forEach((room, index) => {
+                if (room.otherUser && room.task) {
+                    const title = room.otherUser.username;
+                    const description = room.task.title;
+                    log('analysisResult', `聊天室 ${index + 1} 应该显示:`);
+                    log('analysisResult', `  标题: "${title}"`);
+                    log('analysisResult', `  描述: "${description}"`);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

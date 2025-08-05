@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户名显示测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .success { color: #52c41a; }
+        .error { color: #ff4d4f; }
+        .warning { color: #faad14; }
+        .chat-room {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            margin: 10px 0;
+            background: #fafafa;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1890ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .username {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .task-title {
+            font-size: 12px;
+            color: #666;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>聊天用户名显示测试</h1>
+        
+        <div class="test-section">
+            <h3>📋 测试说明</h3>
+            <p>这个页面用于测试聊天室API返回的用户名数据是否正确显示。</p>
+            <p>如果看到"未知用户"，说明前端处理有问题；如果显示正确的用户名，说明后端数据正常。</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 当前聊天室数据</h3>
+            <button onclick="fetchChatRooms()">获取聊天室数据</button>
+            <button onclick="clearCache()">清除浏览器缓存</button>
+            <div id="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ 期望的正确显示</h3>
+            <div class="chat-room">
+                <div class="avatar">T0</div>
+                <div class="chat-info">
+                    <div class="username">testuser0</div>
+                    <div class="task-title">关于任务: 1000</div>
+                </div>
+            </div>
+            <div class="chat-room">
+                <div class="avatar">C</div>
+                <div class="chat-info">
+                    <div class="username">chenlo</div>
+                    <div class="task-title">关于任务: 1000</div>
+                </div>
+            </div>
+            <div class="chat-room">
+                <div class="avatar">T2</div>
+                <div class="chat-info">
+                    <div class="username">testuser2</div>
+                    <div class="task-title">关于任务: 测试任务 - 2025/7/26 下午8:16:12</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchChatRooms() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>正在获取聊天室数据...</p>';
+            
+            try {
+                // 首先检查是否已登录
+                const authResponse = await fetch('/auth/me', {
+                    credentials: 'include'
+                });
+                
+                if (!authResponse.ok) {
+                    resultDiv.innerHTML = '<p class="error">❌ 用户未登录，请先登录</p>';
+                    return;
+                }
+                
+                const authData = await authResponse.json();
+                console.log('当前用户:', authData.data);
+                
+                // 获取聊天室数据
+                const response = await fetch('/chat/rooms', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('聊天室API响应:', data);
+                
+                if (data.success && data.data) {
+                    let html = `<h4>✅ 成功获取到 ${data.data.length} 个聊天室:</h4>`;
+                    
+                    data.data.forEach((room, index) => {
+                        const username = room.otherUser?.username || '未知用户';
+                        const taskTitle = room.task?.title || '未知任务';
+                        const avatar = username.charAt(0).toUpperCase();
+                        
+                        const statusClass = username === '未知用户' ? 'error' : 'success';
+                        
+                        html += `
+                            <div class="chat-room">
+                                <div class="avatar">${avatar}</div>
+                                <div class="chat-info">
+                                    <div class="username ${statusClass}">${username}</div>
+                                    <div class="task-title">关于任务: ${taskTitle}</div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        console.log(`聊天室 ${index + 1}:`, {
+                            username: username,
+                            taskTitle: taskTitle,
+                            otherUser: room.otherUser,
+                            task: room.task
+                        });
+                    });
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<p class="error">❌ 获取聊天室数据失败</p>';
+                }
+                
+            } catch (error) {
+                console.error('获取聊天室数据失败:', error);
+                resultDiv.innerHTML = `<p class="error">❌ 错误: ${error.message}</p>`;
+            }
+        }
+        
+        function clearCache() {
+            // 清除localStorage
+            localStorage.clear();
+            // 清除sessionStorage
+            sessionStorage.clear();
+            // 提示用户
+            alert('浏览器缓存已清除，请重新获取数据');
+        }
+        
+        // 页面加载时自动获取数据
+        window.onload = function() {
+            fetchChatRooms();
+        };
+    </script>
+</body>
+</html>
